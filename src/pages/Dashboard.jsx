@@ -8,16 +8,28 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   const [user, setUser] = useState({
     name: "Srivalli",
   });
 
   // Dynamic Tasks
   const [tasks, setTasks] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0,
+  });
 
   /* ================= FETCH DATA ================= */
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   const fetchDashboardData = async () => {
 
@@ -26,7 +38,7 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "http://localhost:5000/api/tasks",
+        "https://buddy-app.onrender.com/api/tasks",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,6 +48,31 @@ export default function Dashboard() {
 
       setTasks(response.data);
 
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "https://buddy-app.onrender.com/api/tasks",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const tasks = response.data;
+      const completed = tasks.filter(
+        (task) => task.completed
+      ).length;
+      setStats({
+        total: tasks.length,
+        completed,
+        pending: tasks.length - completed,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -61,6 +98,15 @@ export default function Dashboard() {
       : getHour() < 17
       ? "Good Afternoon"
       : "Good Evening";
+
+  const cardStyle = {
+    background: "#11182b",
+    padding: "25px",
+    borderRadius: "20px",
+    minWidth: "220px",
+    color: "white",
+    boxShadow: "0 0 20px rgba(0,0,0,0.3)",
+  };
 
   return (
     <>
@@ -493,6 +539,23 @@ export default function Dashboard() {
 
           </div>
 
+          <button
+            onClick={handleLogout}
+            style={{
+              marginTop: "20px",
+              width: "100%",
+              padding: "14px",
+              borderRadius: "14px",
+              border: "none",
+              background: "#ff4d6d",
+              color: "white",
+              fontWeight: "700",
+              cursor: "pointer",
+            }}
+          >
+            Logout
+          </button>
+
         </div>
 
         {/* MAIN */}
@@ -574,6 +637,32 @@ export default function Dashboard() {
                 Pending Tasks
               </div>
 
+            </div>
+
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+              marginTop: "30px",
+              flexWrap: "wrap",
+            }}
+          >
+
+            <div style={cardStyle}>
+              <h2>Total Tasks</h2>
+              <h1>{stats.total}</h1>
+            </div>
+
+            <div style={cardStyle}>
+              <h2>Completed</h2>
+              <h1>{stats.completed}</h1>
+            </div>
+
+            <div style={cardStyle}>
+              <h2>Pending</h2>
+              <h1>{stats.pending}</h1>
             </div>
 
           </div>

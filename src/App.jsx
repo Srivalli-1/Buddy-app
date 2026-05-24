@@ -12,6 +12,7 @@ import Buddies from "./pages/Buddies";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import BucketList from "./pages/Bucketlist";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
 
@@ -36,29 +37,49 @@ export default function App() {
           element={<Signup />}
         />
 
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
+       <Route
+           path="/dashboard"
+           element={
+           <ProtectedRoute>
+               <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/tasks"
-          element={<Tasks />}
+          element={
+             <ProtectedRoute>
+               <Tasks />
+             </ProtectedRoute>}
+           
         />
 
         <Route
           path="/calendar"
-          element={<Calendar />}
+          element={
+            <ProtectedRoute>
+            <Calendar />
+            </ProtectedRoute>
+            }
         />
 
         <Route
           path="/bucketlist"
-          element={<BucketList />}
+          element={
+            <ProtectedRoute>
+          <BucketList />
+          </ProtectedRoute>
+        }
         />
 
         <Route
           path="/buddies"
-          element={<Buddies />}
+          element={
+            <ProtectedRoute>
+             <Buddies />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>

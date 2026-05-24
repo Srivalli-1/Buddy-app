@@ -1,10 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaGoogle, FaDiscord, FaGamepad } from "react-icons/fa";
 import { FiEye } from "react-icons/fi";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import loginBg from "../assets/login-bg.png";
 
 const Login = () => {
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+
+  };
+
+  const handleLogin = async () => {
+
+    try {
+
+      const response = await axios.post(
+        "https://buddy-app.onrender.com/api/auth/login",
+        formData
+      );
+
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
+
+      alert("Login Successful 🚀");
+
+      navigate("/dashboard");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        error.response?.data?.message ||
+        "Login Failed"
+      );
+
+    }
+  };
+
   return (
     <div className="h-screen w-full overflow-hidden bg-[#020224]">
 
@@ -26,7 +75,7 @@ const Login = () => {
         }}
       >
 
-        {/* BUDDY TODO OUTSIDE GLASS CARD */}
+        {/* LOGO */}
         <div
           className="
             absolute
@@ -65,7 +114,7 @@ const Login = () => {
 
         </div>
 
-        {/* SINGLE GLASS CARD */}
+        {/* GLASS CARD */}
         <div
           className="
             w-[530px]
@@ -133,6 +182,9 @@ const Login = () => {
 
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
               autoComplete="off"
               className="
@@ -181,6 +233,9 @@ const Login = () => {
 
               <input
                 type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Enter your password"
                 autoComplete="off"
                 className="
@@ -251,6 +306,7 @@ const Login = () => {
 
           {/* LOGIN BUTTON */}
           <button
+            onClick={handleLogin}
             className="
               w-full
               h-[60px]
@@ -275,148 +331,6 @@ const Login = () => {
           >
             Login
           </button>
-
-          {/* CONTINUE WITH */}
-          <div
-            className="
-              flex
-              items-center
-              gap-4
-              mt-10
-            "
-          >
-
-            <div className="flex-1 h-[1px] bg-[#5b5b9f]" />
-
-            <p
-              className="
-                text-gray-300
-                text-[16px]
-              "
-            >
-              Or continue with
-            </p>
-
-            <div className="flex-1 h-[1px] bg-[#5b5b9f]" />
-
-          </div>
-
-          {/* SOCIAL ICONS */}
-          <div
-            className="
-              flex
-              justify-center
-              gap-5
-              mt-8
-            "
-          >
-
-            {/* GOOGLE */}
-            <button
-              className="
-                w-[68px]
-                h-[68px]
-
-                rounded-[18px]
-
-                bg-[#17175f]
-
-                border
-                border-[#4f4fff]
-
-                flex
-                items-center
-                justify-center
-
-                text-white
-                text-3xl
-
-                hover:scale-105
-                transition
-              "
-            >
-              <FaGoogle />
-            </button>
-
-            {/* DISCORD */}
-            <button
-              className="
-                w-[68px]
-                h-[68px]
-
-                rounded-[18px]
-
-                bg-[#17175f]
-
-                border
-                border-[#4f4fff]
-
-                flex
-                items-center
-                justify-center
-
-                text-white
-                text-3xl
-
-                hover:scale-105
-                transition
-              "
-            >
-              <FaDiscord />
-            </button>
-
-            {/* GAME */}
-            <button
-              className="
-                w-[68px]
-                h-[68px]
-
-                rounded-[18px]
-
-                bg-[#17175f]
-
-                border
-                border-[#4f4fff]
-
-                flex
-                items-center
-                justify-center
-
-                text-white
-                text-3xl
-
-                hover:scale-105
-                transition
-              "
-            >
-              <FaGamepad />
-            </button>
-
-          </div>
-
-          {/* SIGN UP */}
-          <p
-            className="
-              text-center
-              text-gray-300
-              text-[17px]
-              mt-10
-            "
-          >
-
-            Don’t have an account?{" "}
-
-            <span
-              className="
-                text-[#b56dff]
-                font-bold
-                cursor-pointer
-              "
-            >
-              Sign up
-            </span>
-
-          </p>
 
         </div>
 

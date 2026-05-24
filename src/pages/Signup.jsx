@@ -1,8 +1,68 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiEye } from "react-icons/fi";
 import signupBg from "../assets/signup-bg.png";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+
+  };
+
+  const handleSignup = async () => {
+
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+
+      const response = await axios.post(
+        "https://buddy-app.onrender.com/api/auth/signup",
+        {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }
+      );
+
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
+
+      alert("Signup Successful 🚀");
+
+      navigate("/dashboard");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Signup Failed");
+
+    }
+  };
+
   return (
     <div className="h-screen w-full overflow-hidden bg-[#020224]">
 
@@ -105,6 +165,9 @@ const Signup = () => {
 
             <input
               type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
               placeholder="Enter your username"
               autoComplete="off"
               className="
@@ -150,6 +213,9 @@ const Signup = () => {
 
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Enter your email"
               autoComplete="off"
               className="
@@ -197,6 +263,9 @@ const Signup = () => {
 
               <input
                 type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Create a password"
                 autoComplete="off"
                 className="
@@ -260,6 +329,9 @@ const Signup = () => {
 
               <input
                 type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="Confirm your password"
                 autoComplete="off"
                 className="
@@ -304,8 +376,6 @@ const Signup = () => {
 
           </div>
 
-          
-
           {/* TERMS */}
           <div
             className="
@@ -343,6 +413,7 @@ const Signup = () => {
 
           {/* SIGNUP BUTTON */}
           <button
+            onClick={handleSignup}
             className="
               w-full
               h-[58px]

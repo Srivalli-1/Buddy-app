@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+import axios from "axios";
 import robotImg from "../assets/robot.png";
 
 const CATEGORIES = ["All", "Study", "Personal", "Health", "Coding"];
@@ -62,17 +66,109 @@ const initialTasks = [
 
 export default function MyTasks() {
 
-  const [tasks, setTasks] = useState(initialTasks);
-  const [activeFilter, setActiveFilter] = useState("All");
+  console.log("Tasks Page Loaded");
 
-  const toggleTask = (id) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task._id === id
-          ? { ...task, done: !task.done }
-          : task
-      )
-    );
+  const [tasks, setTasks] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [newTask, setNewTask] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [taskData, setTaskData] = useState({
+    title: "",
+    startTime: "",
+    endTime: "",
+    notes: "",
+  });
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "https://buddy-app.onrender.com/api/tasks",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTasks(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const addTask = async () => {
+    if (!taskData.title.trim()) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "https://buddy-app.onrender.com/api/tasks",
+        taskData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTasks([...tasks, response.data]);
+      setTaskData({
+        title: "",
+        startTime: "",
+        endTime: "",
+        notes: "",
+      });
+      setShowForm(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const toggleTask = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `https://buddy-app.onrender.com/api/tasks/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === id
+            ? response.data
+            : task
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `https://buddy-app.onrender.com/api/tasks/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTasks((prev) =>
+        prev.filter(
+          (task) => task._id !== id
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const filteredTasks =
@@ -82,7 +178,15 @@ export default function MyTasks() {
           (task) => task.category === activeFilter
         );
 
-  const groups = ["Today", "Tomorrow", "Completed"];
+  const inputStyle = {
+    height: "50px",
+    borderRadius: "12px",
+    border: "1px solid #444",
+    background: "#1a2238",
+    color: "white",
+    padding: "0 15px",
+    outline: "none",
+  };
 
   return (
     <>
@@ -411,7 +515,7 @@ export default function MyTasks() {
           right:40px;
           bottom:40px;
 
-          z-index:1;
+          z-index:-1;
 
           pointer-events:none;
         }
@@ -558,11 +662,94 @@ export default function MyTasks() {
               My Tasks
             </div>
 
-            <button className="mt-add-btn">
+            <button
+              className="mt-add-btn"
+              onClick={() =>
+                setShowForm(!showForm)
+              }
+            >
               ＋ Add Task
             </button>
 
           </div>
+
+          {showForm && (
+
+            <div
+              style={{
+                background: "#11182b",
+                padding: "20px",
+                borderRadius: "20px",
+                marginBottom: "30px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "15px",
+              }}
+            >
+
+              <input
+                type="text"
+                placeholder="Task Name"
+                value={taskData.title}
+                onChange={(e) =>
+                  setTaskData({
+                    ...taskData,
+                    title: e.target.value,
+                  })
+                }
+                style={inputStyle}
+              />
+
+              <input
+                type="time"
+                value={taskData.startTime}
+                onChange={(e) =>
+                  setTaskData({
+                    ...taskData,
+                    startTime: e.target.value,
+                  })
+                }
+                style={inputStyle}
+              />
+
+              <input
+                type="time"
+                value={taskData.endTime}
+                onChange={(e) =>
+                  setTaskData({
+                    ...taskData,
+                    endTime: e.target.value,
+                  })
+                }
+                style={inputStyle}
+              />
+
+              <textarea
+                placeholder="Notes (Optional)"
+                value={taskData.notes}
+                onChange={(e) =>
+                  setTaskData({
+                    ...taskData,
+                    notes: e.target.value,
+                  })
+                }
+                style={{
+                  ...inputStyle,
+                  height: "100px",
+                  paddingTop: "12px",
+                }}
+              />
+
+              <button
+                className="mt-add-btn"
+                onClick={addTask}
+              >
+                Save Task
+              </button>
+
+            </div>
+
+          )}
 
           {/* FILTERS */}
 
@@ -588,81 +775,61 @@ export default function MyTasks() {
 
           </div>
 
-          {/* GROUPS */}
+          <div className="mt-group">
 
-          {groups.map((group) => {
+            <div className="mt-group-label">
+              My Tasks
+            </div>
 
-            const groupTasks =
-              filteredTasks.filter(
-                (task) => task.group === group
-              );
-
-            if (!groupTasks.length) return null;
-
-            return (
+            {filteredTasks.map((task) => (
 
               <div
-                className="mt-group"
-                key={group}
+                key={task._id}
+                className={`mt-task ${
+                  task.completed
+                    ? "completed-row"
+                    : ""
+                }`}
+                onClick={() =>
+                  toggleTask(task._id)
+                }
               >
 
-                <div className="mt-group-label">
-                  {group}
+                <div
+                  className={`mt-check ${
+                    task.completed
+                      ? "checked completed"
+                      : ""
+                  }`}
+                />
+
+                <div className="mt-task-name">
+                  {task.title}
                 </div>
 
-                {groupTasks.map((task) => (
-
-                  <div
-                    key={task._id}
-                    className={`mt-task ${
-                      group === "Completed"
-                        ? "completed-row"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      toggleTask(task._id)
-                    }
-                  >
-
-                    <div
-                      className={`mt-check ${
-                        task.done
-                          ? `checked ${
-                              group === "Completed"
-                                ? "completed"
-                                : ""
-                            }`
-                          : ""
-                      }`}
-                    />
-
-                    <div className="mt-task-name">
-                      {task.title}
-                    </div>
-
-                    <div
-                      className="mt-cat"
-                      style={{
-                        background: `${task.color}22`,
-                        color: task.color,
-                        border: `1px solid ${task.color}55`,
-                      }}
-                    >
-                      {task.category}
-                    </div>
-
-                    <div className="mt-time">
-                      {task.time}
-                    </div>
-
-                  </div>
-
-                ))}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteTask(task._id);
+                  }}
+                  style={{
+                    background: "#ff4d6d",
+                    border: "none",
+                    color: "white",
+                    padding: "8px 12px",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    fontWeight: "700",
+                  }}
+                >
+                  Delete
+                </button>
 
               </div>
 
-            );
-          })}
+            ))}
+
+          </div>
 
         </div>
 
